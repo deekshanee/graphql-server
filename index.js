@@ -1,14 +1,46 @@
 const express = require('express');
 const { ApolloServer, gql } = require('apollo-server-express');
-const mongoose = require('mongoose')
-const { User, Address } = require('./schema')
-const faker = require('faker')
+var _ = require('lodash');
 
-// mongoose.set('debug', true);
-mongoose.connect('mongodb://localhost:27017/graphql', {
-    useNewUrlParser: true,
-});
+const users = [{
+    _id:"1",
+    name:"neernnnnaj gupta",
+    email:"n@gmail.com",
+    address:"10"
+},{
+    _id:"2",
+    name:"neeraj gupta 1",
+    email:"n1@gmail.com",
+    address:"20"
+},
+{
+    _id:"4",
+    name:"neeraj gupta 3",
+    email:"n3@gmail.com",
+    address:"30"
+}];
 
+const address = [
+    {
+    _id: "10",
+    city: "lucknow",
+    country: "india",
+    userId:"1"
+
+},
+{
+    _id: "20",
+    city: "lucknow1",
+    country: "india1" ,
+    userId:"2"
+},
+{
+    _id: "30",
+    city: "lucknow2",
+    country: "india2",
+    userId:"3"  
+}
+]
 // Construct a schema, using GraphQL schema language
 const typeDefs = gql`
   type Query {
@@ -17,13 +49,14 @@ const typeDefs = gql`
     getAddresses: [Address],
     hello: String,
     hey: String,
-    randomPerson: Person
+    getAddress(_id:ID!):Address
   }
 
   type User {
     _id: String,
     name: String,
     email: String,
+    time:String,
     address: Address
   },
 
@@ -33,44 +66,45 @@ const typeDefs = gql`
     country: String,
     user: User
   }
-
-  type Person {
-      name: String,
-      email: String,
-      lat: Float,
-      lng: Float,
-      street: String
-  }
 `;
 
 // resolvers are used to retreive data
 const resolvers = {
     Query: {
-        async getUser(parent, args, context, info) {
-            return await User.findOne({ _id: args._id }).populate("address");
+         getUser(parent, args, context, info) {
+             // when this will resolve it will give the users along with theri address
+             // getting from the backend 
+            const users  =  _.find(users, {_id:args._id});
+            // filter out the users to get the address
+           
+
         },
-        async getUsers() {
-            return await User.find({}).populate("address")
+         getUsers() {        
+            const time = new Date()    
+            const r = users.map(u => {
+                addr = {};
+                addr.city = "lucknow"+u._id;
+                addr.country = "india"+u._id;
+                addr.user = u;
+                u.address = addr;
+                u.time=time;
+                console.log('return data');
+                return u;
+            });
+            
+            return r;
         },
-        async getAddresses() {
-            return await Address.find({}).populate('user')
+         getAddresses() {
+            return address;
         },
         hello() {
             return 'Hi World'
         },
         hey() {
             return "GraphQL is fun"
-        },
-        randomPerson() {
-            return {
-                name: faker.name.firstName(),
-                email: faker.internet.email(),
-                lat: faker.address.latitude(),
-                lng: faker.address.longitude(),
-                street: faker.address.streetAddress
-            }
         }
-    },
+        
+    }
 };
 
 const server = new ApolloServer({ typeDefs, resolvers });

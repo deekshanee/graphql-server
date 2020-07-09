@@ -14,6 +14,7 @@
     "apollo-server-express": "^2.9.16",
     "faker": "^4.1.0",
     "graphql": "^14.6.0",
+    "lodash": "^4.17.15",
     "mongoose": "^5.8.11"
   }
 }
